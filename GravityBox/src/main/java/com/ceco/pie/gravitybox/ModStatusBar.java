@@ -688,6 +688,15 @@ public class ModStatusBar {
                 }
             });
 
+            XposedHelpers.findAndHookMethod(CLASS_PHONE_STATUSBAR_VIEW, classLoader, "onPanelCollapsed", new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    if (mClock != null) {
+                        mClock.setClockVisibility();
+                    }
+                }
+            });
+
             // Header
             try {
                 XposedHelpers.findAndHookMethod(CLASS_QS_FRAGMENT, classLoader, "onViewCreated",
