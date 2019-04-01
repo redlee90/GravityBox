@@ -58,7 +58,7 @@ public class SysUiManagers {
         }
 
         try {
-            IconManager = new StatusBarIconManager();
+            IconManager = new StatusBarIconManager(context);
         } catch (Throwable t) {
             GravityBox.log(TAG, "Error creating IconManager: ", t);
         }

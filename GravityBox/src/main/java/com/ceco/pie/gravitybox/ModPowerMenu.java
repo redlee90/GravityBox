@@ -304,6 +304,7 @@ public class ModPowerMenu {
                         if (locked) {
                             Object wmf = XposedHelpers.getObjectField(param.thisObject, "mWindowManagerFuncs");
                             XposedHelpers.callMethod(wmf, "onGlobalActionsShown");
+                            createDialogIfNull();
                             param.setResult(null);
                         }
                     }
@@ -318,6 +319,17 @@ public class ModPowerMenu {
             }
         } catch (Throwable t) {
             GravityBox.log(TAG, t);
+        }
+    }
+
+    private static void createDialogIfNull() {
+        try {
+            if (XposedHelpers.getObjectField(mGlobalActionsDialog, "mDialog") == null) {
+                XposedHelpers.setObjectField(mGlobalActionsDialog, "mDialog",
+                        XposedHelpers.callMethod(mGlobalActionsDialog, "createDialog"));
+            }
+        } catch (Throwable t) {
+            GravityBox.log(TAG, "Error in createDialogIfNull:", t);
         }
     }
 

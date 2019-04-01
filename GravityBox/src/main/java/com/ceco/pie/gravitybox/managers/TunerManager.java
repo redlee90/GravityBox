@@ -17,7 +17,6 @@ package com.ceco.pie.gravitybox.managers;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.ResultReceiver;
@@ -36,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 
@@ -183,8 +183,9 @@ public class TunerManager implements BroadcastSubReceiver {
         }
     }
 
-    private static List<TuneableItem> getUserItemList(Category category, SharedPreferences prefs) {
-        if (sUserItemsCache.get(category) == null) {
+    // Must be called from Zygote
+    public static void initUserItemsCache(final XSharedPreferences prefs) {
+        for (Category category : new Category[] { Category.FRAMEWORK, Category.SYSTEMUI}) {
             List<TuneableItem> list = new ArrayList<>();
             Map<String, ?> prefMap = prefs.getAll();
             for (Map.Entry<String, ?> pref : prefMap.entrySet()) {
@@ -193,43 +194,52 @@ public class TunerManager implements BroadcastSubReceiver {
                     TuneableItem item = TuneableItem.createUserInstance(pref.getKey(), prefs);
                     if (item != null && item.getCategory() == category && item.isOverridden() &&
                             !TunerBlacklist.isBlacklisted(category, item.getKey())) {
+                        if (DEBUG) log("getUserItemList: new tuneable item added: category=" + category +
+                                "; key=" + item.getKey() +
+                                "; overridden=" + item.isOverridden() +
+                                "; userValue=" + item.getUserValue());
                         list.add(item);
                     }
                 }
             }
             sUserItemsCache.put(category, list);
         }
-        return sUserItemsCache.get(category);
     }
 
-    public static void addUserItemKeysToList(Category category, SharedPreferences prefs, List<String> list) {
-        for (TuneableItem item : TunerManager.getUserItemList(category, prefs)) {
-            if (!list.contains(item.getKey())) {
-                list.add(item.getKey());
+    public static void addUserItemKeysToList(Category category, List<String> list) {
+        if (sUserItemsCache.containsKey(category) && sUserItemsCache.get(category) != null) {
+            for (TuneableItem item : sUserItemsCache.get(category)) {
+                if (!list.contains(item.getKey())) {
+                    list.add(item.getKey());
+                }
             }
         }
     }
 
-    private static TuneableItem findUserItemByKey(Category category, SharedPreferences prefs, String key) {
-        for (TuneableItem item : getUserItemList(category, prefs)) {
-            if (item.getKey().equals(key))
-                return item;
+    private static TuneableItem findUserItemByKey(Category category, String key) {
+        if (sUserItemsCache.containsKey(category) && sUserItemsCache.get(category) != null) {
+            for (TuneableItem item : sUserItemsCache.get(category)) {
+                if (item.getKey().equals(key)) {
+                    return item;
+                }
+            }
         }
         return null;
     }
 
-    public static boolean onIntercept(SharedPreferences prefs,
-                                      ResourceProxy.ResourceSpec spec) {
+    public static boolean onIntercept(ResourceProxy.ResourceSpec spec) {
         Category category = getCategoryFor(spec.pkgName);
         if (category != null) {
-            TuneableItem item = findUserItemByKey(category, prefs, spec.name);
+            TuneableItem item = findUserItemByKey(category, spec.name);
             if (item != null) {
                 spec.value = item.getUserValue();
-                if (DEBUG) log("onIntercept: key=" + spec.name +
+                if (DEBUG) log("onIntercept: user value found:  key=" + spec.name +
                         "; value=" + spec.value);
                 return true;
             }
         }
+        if (DEBUG) log("onIntercept: user value NOT found:  key=" + spec.name +
+                "; value=" + spec.value);
         return false;
     }
 }

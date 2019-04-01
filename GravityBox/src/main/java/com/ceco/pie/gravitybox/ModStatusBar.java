@@ -15,15 +15,12 @@
 package com.ceco.pie.gravitybox;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.ceco.pie.gravitybox.TrafficMeterAbstract.TrafficMeterMode;
 import com.ceco.pie.gravitybox.managers.SysUiManagers;
-import com.ceco.pie.gravitybox.managers.TunerManager;
 import com.ceco.pie.gravitybox.quicksettings.QsQuickPulldownHandler;
 import com.ceco.pie.gravitybox.shortcuts.AShortcut;
-import com.ceco.pie.gravitybox.tuner.TunerMainActivity;
 import com.ceco.pie.gravitybox.visualizer.VisualizerController;
 
 import de.robv.android.xposed.XC_MethodHook;
@@ -265,54 +262,6 @@ public class ModStatusBar {
                 GravityBox.log(TAG, t);
             }
         }
-    }
-
-    private static List<String> sSupportedResourceNames;
-    public static void initResources(final XSharedPreferences prefs, final XSharedPreferences tunerPrefs) {
-        new ResourceProxy(PACKAGE_NAME, new ResourceProxy.Interceptor() {
-            @Override
-            public List<String> getSupportedResourceNames() {
-                if (sSupportedResourceNames == null) {
-                    sSupportedResourceNames = new ArrayList<>();
-                    sSupportedResourceNames.addAll(Arrays.asList(
-                            "rounded_corner_content_padding"
-                    ));
-                    // add overriden items from Advanced tuning if applicable
-                    if (tunerPrefs.getBoolean(TunerMainActivity.PREF_KEY_ENABLED, false) &&
-                            !tunerPrefs.getBoolean(TunerMainActivity.PREF_KEY_LOCKED, false)) {
-                        TunerManager.addUserItemKeysToList(TunerManager.Category.FRAMEWORK,
-                                tunerPrefs, sSupportedResourceNames);
-                        TunerManager.addUserItemKeysToList(TunerManager.Category.SYSTEMUI,
-                                tunerPrefs, sSupportedResourceNames);
-                    }
-                }
-                return sSupportedResourceNames;
-            }
-
-            @Override
-            public boolean onIntercept(ResourceProxy.ResourceSpec resourceSpec) {
-                // Advanced tuning has priority
-                if (tunerPrefs.getBoolean(TunerMainActivity.PREF_KEY_ENABLED, false) &&
-                        !tunerPrefs.getBoolean(TunerMainActivity.PREF_KEY_LOCKED, false)) {
-                    if (TunerManager.onIntercept(tunerPrefs, resourceSpec)) {
-                        return true;
-                    }
-                }
-
-                if (!resourceSpec.pkgName.equals(PACKAGE_NAME))
-                    return false;
-
-                switch (resourceSpec.name) {
-                    case "rounded_corner_content_padding":
-                        if (prefs.getBoolean(GravityBoxSettings.PREF_KEY_CORNER_PADDING_REMOVE, false)) {
-                            resourceSpec.value = 0;
-                            return true;
-                        }
-                        break;
-                }
-                return false;
-            }
-        });
     }
 
     public static int getStatusBarState() {

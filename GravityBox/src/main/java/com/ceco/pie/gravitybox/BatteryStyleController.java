@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.ceco.pie.gravitybox.ModStatusBar.ContainerType;
+import com.ceco.pie.gravitybox.managers.SysUiManagers;
 
 import android.content.Intent;
 import android.content.Context;
@@ -159,6 +160,9 @@ public class BatteryStyleController implements BroadcastSubReceiver {
         lParams.setMarginEnd(bIconMarginEnd);
         mCircleBattery.setLayoutParams(lParams);
         mCircleBattery.setVisibility(View.GONE);
+        if (mContainerType == ContainerType.HEADER) {
+            mCircleBattery.setOnClickListener(v -> startPowerUsageSummary());
+        }
         mSystemIcons.addView(mCircleBattery, bIconIndex);
         if (DEBUG) log("CmCircleBattery injected");
 
@@ -182,8 +186,22 @@ public class BatteryStyleController implements BroadcastSubReceiver {
             percentTextView.setTypeface(null, Typeface.BOLD);
         }
         mPercentText = new StatusbarBatteryPercentage(percentTextView, mPrefs, this);
+        if (mContainerType == ContainerType.HEADER) {
+            mPercentText.getView().setOnClickListener((v) -> startPowerUsageSummary());
+        }
         mSystemIcons.addView(mPercentText.getView(), mBatteryPercentTextOnRight ? bIconIndex+2 : bIconIndex);
         if (DEBUG) log("Battery percent text injected");
+    }
+
+    private void startPowerUsageSummary() {
+        if (SysUiManagers.AppLauncher != null) {
+            try {
+                SysUiManagers.AppLauncher.startActivity(
+                        mContext, new Intent(Intent.ACTION_POWER_USAGE_SUMMARY));
+            } catch (Throwable t) {
+                GravityBox.log(TAG, "Error in startPowerUsageSummary:", t);
+            }
+        }
     }
 
     private void updateBatteryStyle() {

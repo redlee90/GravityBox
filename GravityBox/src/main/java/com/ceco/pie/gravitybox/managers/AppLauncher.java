@@ -311,7 +311,7 @@ public class AppLauncher implements BroadcastSubReceiver {
             }
         // otherwise start activity dismissing keyguard
         } else {
-            if (SysUiManagers.KeyguardMonitor.isShowing() && mStatusBar != null) {
+            if (mStatusBar != null) {
                 try {
                     XposedHelpers.callMethod(mStatusBar, "postStartActivityDismissingKeyguard", intent, 0);
                 } catch (Throwable t) {

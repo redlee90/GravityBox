@@ -17,8 +17,9 @@ package com.ceco.pie.gravitybox;
 import android.content.res.Resources;
 import android.util.SparseArray;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -32,58 +33,21 @@ public class ResourceProxy {
         XposedBridge.log(TAG + ": " + message);
     }
 
-    public static class ResourceSpec {
-        private static SparseArray<ResourceSpec> sCache = new SparseArray<>();
-        private static List<Integer> sCacheUnsupported = new ArrayList<>();
+    private static Map<String,SparseArray<ResourceSpec>> sCache = new HashMap<>();
 
+    public static class ResourceSpec {
         public String pkgName;
         public int id;
         public String name;
         public Object value;
         private boolean isProcessed;
+        private boolean isOverridden;
 
         private ResourceSpec(String pkgName, int id, String name, Object value) {
             this.pkgName = pkgName;
             this.id = id;
             this.name = name;
             this.value = value;
-        }
-
-        static ResourceSpec getOrCreate(String pkgName, Resources res, int id, Object value, Interceptor interceptor) {
-            if (sCacheUnsupported.contains(id))
-                return null;
-            if (sCache.get(id) != null)
-                return sCache.get(id);
-
-            String resPkgName = getResourcePackageName(res, id);
-            if ("android".equals(resPkgName) || pkgName.equals(resPkgName)) {
-                String name = getResourceEntryName(res, id);
-                if (name != null && interceptor.getSupportedResourceNames().contains(name)) {
-                    ResourceSpec spec = new ResourceSpec(resPkgName, id, name, value);
-                    sCache.put(id, spec);
-                    if (DEBUG) log("New " + spec.toString());
-                    return spec;
-                }
-            }
-
-            sCacheUnsupported.add(id);
-            return null;
-        }
-
-        private static String getResourcePackageName(Resources res, int id) {
-            try {
-                return res.getResourcePackageName(id);
-            } catch (Resources.NotFoundException e) {
-                return null;
-            }
-        }
-
-        private static String getResourceEntryName(Resources res, int id) {
-            try {
-                return res.getResourceEntryName(id);
-            } catch (Resources.NotFoundException e) {
-                return null;
-            }
         }
 
         @Override
@@ -97,23 +61,23 @@ public class ResourceProxy {
         }
     }
 
-    interface Interceptor {
-        List<String> getSupportedResourceNames();
-        boolean onIntercept(ResourceSpec resourceSpec);
+    static abstract class Interceptor {
+        private List<String> mSupportedResourceNames;
+
+        Interceptor(List<String> supportedResourceNames) {
+            mSupportedResourceNames = supportedResourceNames;
+        }
+
+        List<String> getSupportedResourceNames() {
+            return mSupportedResourceNames;
+        }
+
+        abstract boolean onIntercept(ResourceSpec resourceSpec);
     }
 
-    private String mPackageName;
-    private Interceptor mInterceptor;
+    private final Map<String, Interceptor> mInterceptors = new HashMap<>();
 
-    ResourceProxy(String packageName, Interceptor interceptor) {
-        if (packageName == null)
-            throw new IllegalArgumentException("Package name cannot be null");
-        if (interceptor == null)
-            throw new IllegalArgumentException("Interceptor cannot be null");
-
-        mPackageName = packageName;
-        mInterceptor = interceptor;
-
+    ResourceProxy() {
         createIntegerHook();
         createBooleanHook();
         createDimensionHook();
@@ -122,23 +86,86 @@ public class ResourceProxy {
         createStringHook();
     }
 
+    void addInterceptor(String pkgName, Interceptor interceptor) {
+        synchronized (mInterceptors) {
+            if (!mInterceptors.containsKey(pkgName)) {
+                mInterceptors.put(pkgName, interceptor);
+            }
+        }
+    }
+
     private XC_MethodHook mInterceptHook = new XC_MethodHook() {
         @Override
         protected void afterHookedMethod(MethodHookParam param) {
-            ResourceSpec spec = ResourceSpec.getOrCreate(mPackageName,
-                    (Resources)param.thisObject, (int)param.args[0],
-                    param.getResult(), mInterceptor);
+            ResourceSpec spec = getOrCreateResourceSpec((Resources)param.thisObject,
+                    (int)param.args[0], param.getResult());
             if (spec != null) {
-                if (spec.isProcessed) {
+                if (spec.isOverridden) {
                     param.setResult(spec.value);
-                } else if (mInterceptor.onIntercept(spec)) {
-                    if (DEBUG) log(param.method.getName() + ": " + spec.toString());
-                    spec.isProcessed = true;
-                    param.setResult(spec.value);
+                    return;
+                } else if (spec.isProcessed) {
+                    return;
                 }
+                synchronized (mInterceptors) {
+                    if (mInterceptors.get(spec.pkgName) != null) {
+                        if (mInterceptors.get(spec.pkgName).onIntercept(spec)) {
+                            if (DEBUG) log(param.method.getName() + ": " + spec.toString());
+                            spec.isOverridden = true;
+                            param.setResult(spec.value);
+                        }
+                    }
+                }
+                spec.isProcessed = true;
             }
         }
     };
+
+    private ResourceSpec getOrCreateResourceSpec(Resources res, int id, Object value) {
+        final String resPkgName = getResourcePackageName(res, id);
+        if (resPkgName == null)
+            return null;
+        if (sCache.get(resPkgName) != null && sCache.get(resPkgName).get(id) != null)
+            return sCache.get(resPkgName).get(id);
+
+        final String name = getResourceEntryName(res, id);
+        if (name == null)
+            return null;
+
+        synchronized (mInterceptors) {
+            for (Map.Entry<String,Interceptor> entry : mInterceptors.entrySet()) {
+                if (entry.getKey().equals(resPkgName) &&
+                        entry.getValue().getSupportedResourceNames().contains(name)) {
+                    ResourceSpec spec = new ResourceSpec(resPkgName, id, name, value);
+                    if (sCache.get(resPkgName) == null) {
+                        sCache.put(resPkgName, new SparseArray<>());
+                    }
+                    sCache.get(resPkgName).put(id, spec);
+                    if (DEBUG) log("New " + spec.toString());
+                    return spec;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static String getResourcePackageName(Resources res, int id) {
+        try {
+            return res.getResourcePackageName(id);
+        } catch (Resources.NotFoundException e) {
+            if (DEBUG) GravityBox.log(TAG, "Error in getResourcePackageName:", e);
+            return null;
+        }
+    }
+
+    private static String getResourceEntryName(Resources res, int id) {
+        try {
+            return res.getResourceEntryName(id);
+        } catch (Resources.NotFoundException e) {
+            if (DEBUG) GravityBox.log(TAG, "Error in getResourceEntryName:", e);
+            return null;
+        }
+    }
 
     private void createIntegerHook() {
         try {

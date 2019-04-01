@@ -2014,4 +2014,20 @@
     <string name="pref_vol_force_ring_control_title">Принудительное управление громкостью звонка</string>
     <string name="pref_vol_force_ring_control_summary">Если включено, кнопки громкости управляют громкостью звонка вместо громкости музыки</string>
 
+    <!-- Clock position -->
+    <string name="pref_clock_position_title">Положение часов</string>
+    <string name="pref_clock_position_header_title">Положение часов в заголовке</string>
+    <string name="clock_pos_left">Слева</string>
+    <string name="clock_pos_right">Справа</string>
+    <string name="clock_pos_center">По центру</string>
+
+    <!-- Battery percent text - statusbar header -->
+    <string name="battery_percent_text_statusbar_header_title">В заголовке строки состояния</string>
+    <string name="battery_percent_text_statusbar_header_summary">Показывать процент батареи в заголовке строки состояния.
+        Применяется только в пользовательском стиле батареи.</string>
+
+    <!-- Battery indicator - statusbar header -->
+    <string name="pref_battery_style_header_title">Применить к заголовку строки состояния</string>
+    <string name="pref_battery_style_header_summary">Применение выбранного индикатора батареи и к заголовку строки состояния</string>
+
 </resources>

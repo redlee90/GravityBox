@@ -207,11 +207,9 @@ public class ModPower {
 
         // Wake on plug for TouchWiz
         try {
-            if (Utils.isSamsungRom()) {
-                if (!prefs.getBoolean(GravityBoxSettings.PREF_KEY_UNPLUG_TURNS_ON_SCREEN, true)) {
-                    XposedHelpers.findAndHookMethod(pmServiceClass, "shouldWakeUpWhenPluggedOrUnpluggedLocked",
-                        boolean.class, int.class, boolean.class, XC_MethodReplacement.returnConstant(false));
-                }
+            if (!prefs.getBoolean(GravityBoxSettings.PREF_KEY_UNPLUG_TURNS_ON_SCREEN, true)) {
+                XposedHelpers.findAndHookMethod(pmServiceClass, "shouldWakeUpWhenPluggedOrUnpluggedLocked",
+                    boolean.class, int.class, boolean.class, XC_MethodReplacement.returnConstant(false));
             }
         } catch (Throwable t) {
             GravityBox.log(TAG, t);

@@ -1941,12 +1941,12 @@ Devam ederseniz, kendi sorumluluğunuz altındadır ve herhangi bir destek bekle
     <string name="pref_battery_bar_lockscreen_only_title">Yalnızca kilit ekranında</string>
 
     <!-- Advanced tuning -->
-    <string name="pref_tuner_title">Gelişmiş ayar</string>
+    <string name="pref_tuner_title">Gelişmiş ayarlamalar</string>
     <string name="pref_tuner_summary">Framework ve Sistem Arayüzü yapılandırma parametrelerinin gelişmiş şekilde ayarlanmasını sağlar</string>
-    <string name="tuner_info">Gelişmiş ayar, geçerli değerler de dahil olmak üzere tüm yapılandırma parametrelerini Framework ve Sistem Arayüzünden dinamik olarak çıkarır ve kullanıcının bunları kendi değerleri ile geçersiz kılmasını sağlar.
-        Ayar şu anda tamsayılar ve booleans gibi basit parametre türleri için kullanılabilir.
+    <string name="tuner_info">Gelişmiş ayarlamalar, mevcut değerler de dahil olmak üzere tüm yapılandırma parametrelerini Framework ve Sistem Arayüzünden dinamik olarak çıkarır ve kullanıcının bunları kendi değerleri ile geçersiz kılmasını sağlar.
+        Ayarlamalar şu anda tamsayılar ve booleans gibi basit parametre türleri için kullanılabilir.
         Geçersiz kılınan değerler önyükleme sırasında uygulanır. Nihai sonuç daima cihaz türüne, ilgili donanım desteğine ve satıcı uygulamasına bağlıdır; bu nedenle bazı parametrelerde yapılan değişikliklerin herhangi bir etkisinin olmaması normaldir.</string>
-    <string name="tuner_warning">Gelişmiş ayar yalnızca uzman kullanıcılar için tasarlanmıştır. Varsayılan değerlerin geçersiz kılınması ve yanlış değerler kullanılması, istikrar ve performans sorunlarına yol açabilir ve hatta sisteminizi kullanılamaz duruma getirebilir.
+    <string name="tuner_warning">Gelişmiş ayarlamalar yalnızca uzman kullanıcılar için tasarlanmıştır. Varsayılan değerlerin geçersiz kılınması ve yanlış değerler kullanılması, istikrar ve performans sorunlarına yol açabilir ve hatta sisteminizi kullanılamaz duruma getirebilir.
         Değişiklikler kalıcı değildir ve yalnızca GravityBox Xposed modülü aktif ve açma/kapama anahtarı etkin olduğu sürece geçerlidir.
         Dikkatli kullanın ve her zaman bir yedeğiniz olsun!</string>
     <string name="pref_tuner_master_switch_summary">Yeniden başlatma gerektirir</string>
@@ -1962,7 +1962,7 @@ Devam ederseniz, kendi sorumluluğunuz altındadır ve herhangi bir destek bekle
     <string name="tuneable_overridden_value">Geçersiz kılınan değer</string>
     <string name="tuneable_reboot_required">Yeniden başlatma gerekli</string>
     <string name="pref_tuneable_value_int_error">Geçersiz değer. Tamsayı bekleniyor</string>
-    <string name="tuner_manager_not_responding">Ayar yöneticisi yanıt vermiyor</string>
+    <string name="tuner_manager_not_responding">Ayarlama yöneticisi yanıt vermiyor</string>
 
     <!-- Stock sound -->
     <string name="stock_sound">Stok ses</string>
@@ -1970,5 +1970,21 @@ Devam ederseniz, kendi sorumluluğunuz altındadır ve herhangi bir destek bekle
     <!-- Force ring volume control -->
     <string name="pref_vol_force_ring_control_title">Zil sesi kontrolünü zorla</string>
     <string name="pref_vol_force_ring_control_summary">Etkinleştirildiğinde, ses tuşları müzik sesi yerine zil sesini kontrol eder</string>
+
+    <!-- Clock position -->
+    <string name="pref_clock_position_title">Saat konumu</string>
+    <string name="pref_clock_position_header_title">Başlıktaki saat konumu</string>
+    <string name="clock_pos_left">Sol</string>
+    <string name="clock_pos_right">Sağ</string>
+    <string name="clock_pos_center">Orta</string>
+
+    <!-- Battery percent text - statusbar header -->
+    <string name="battery_percent_text_statusbar_header_title">Durum çubuğu başlığında göster</string>
+    <string name="battery_percent_text_statusbar_header_summary">Pil yüzde metnini durum çubuğu başlığında gösterir.
+        Yalnızca özel pil stili için geçerlidir.</string>
+
+    <!-- Battery indicator - statusbar header -->
+    <string name="pref_battery_style_header_title">Durum çubuğu başlığına uygula</string>
+    <string name="pref_battery_style_header_summary">Seçilen pil göstergesini durum çubuğu başlığına da uygular</string>
 
 </resources>

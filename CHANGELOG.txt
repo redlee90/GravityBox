@@ -1,3 +1,17 @@
+Changelog 9.0.0-beta-6 - 26/03/2019
+--------------------------------------
+- Clock: do not propagate date and day of week to statusbar header clock (was redundant)
+- Clock: added option for controlling statusbar header clock position independently of statusbar clock position
+- BatteryPercent: added option for choosing whether to show GB's percent text also in statusbar header
+- BatteryStyle: added option for choosing whether to apply battery indicator style also to statusbar header
+- Navbar: fixed expanded desktop behavior when navbar tweaks master switch is off
+- ExpandedDesktop: improved layout when navigation bar hidden by expanded desktop
+- Fixed tiles per header not updated after reboot for Samsung devices (thanks to Firefds)
+- Fixed exception throwing when QuickSettings management is enabled on Samsung devices (thanks to Firefds)
+- Fixed brightness bar tweaks for Samsung devices (thanks to Firefds)
+- Fixed recent key not working on Samsung devices when enabling navigation bar tweaks (thanks to Firefds)
+- Updated French translations (thanks to instazedd)
+
 Changelog 9.0.0-beta-5 - 20/03/2019
 --------------------------------------
 - Clock: added positioning support to clock in header of expanded statusbar
